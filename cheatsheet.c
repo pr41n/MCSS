@@ -14,5 +14,10 @@ int main(){
     printf("%o\t%x\n", 16, 0x6a);
     printf("%c\t%s\n", 'a', "text");
 
+    integer = 1;
+
+    while (integer <= 3 | a == 'a')
+        integer = integer + 1;
+
 }
 
