@@ -1,6 +1,6 @@
 #include <stdio.h>
 
 int main(){
-    printf("TFG");
+    printf("Monte Carlo simulation");
     return 0;
 }
