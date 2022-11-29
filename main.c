@@ -2,14 +2,14 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define NITER 1e1
+#define NITER 1e6
 #define DIM 2       // Dimension = 2 (circle)
 
 int main(){
     double x[DIM];
-    double *px = &x;
     double pi;
     long seed = time(0);
+    int count = 0;
 
     // Display title and seed for random numbers
     printf("####### MONTE CARLO SIMULATION: PI #######\n");
@@ -19,13 +19,19 @@ int main(){
     srand(seed);
 
     // Monte Carlo
+    double r2;
     for (unsigned long int i=0; i<NITER; i++) {
+        r2 = 0;
         for (int k=0; k<DIM; k++) {
-            x[k] = (double) rand()/RAND_MAX * 2 - 1;
+            x[k] = (double) rand()/RAND_MAX * 2 - 1;        // uniform distribution in [-1,1]
+            r2 += x[k]*x[k];                                // term of r² = x²
         }
-        printf("%8.3f %8.3f \n", x[0], x[1]);
+        if (r2 <= 1.0) count++;       // add to count if point inside circle, including border
     }
 
+    pi = (double) count/NITER;
+    printf("Number of points: %1.2e\t Inside the circle: %d\n", NITER, count);
+    printf("Estimation of pi: %1.5f \n", pi);
 
     return 0;
 }
