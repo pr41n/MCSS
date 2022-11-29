@@ -46,6 +46,17 @@ Format Specifier	   Type
 %-20.5s              left align and print string up to 5 character
 */
 
+/* --------FUNCTION RETURN TYPES--------
+integral datatype                                       (_Bool[C99]/char/short/int/long/long long and signed/unsigned variants)
+floating-point datatype                                 (float/double/long double and _Complex variants[C99])
+structure and union values                              (values of type struct ... or union ...)
+enumeration values                                      (values of type enum ...)
+pointers to any of the above and to any pointer
+function pointers
+void
+*/
+
+
 #include <stdio.h>
 
 #define LOWER 0             // doesnt use memory for storage (precompilation change)
@@ -155,6 +166,16 @@ int main(){
     for (j=0, k=3; j<k; j++, k--) {     // initvalue, condition and/or increment can be expanded
         printf("Cuenta2\n");
     }
+
+    for (i=0; i<1000; i++) {            // goto example
+        for (j=0; j<1000; j++) {
+            for (k=0; k<1000; k++) {
+                if (i==0 && j==0 && k==2) goto found;
+            }
+        }
+    }
+    found:
+        printf("Found!");
 
 /* pointers */
 
