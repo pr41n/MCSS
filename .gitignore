@@ -1,1 +1,7 @@
+<<<<<<< HEAD
 tests/*
+=======
+*
+!*.c
+!.gitignore
+>>>>>>> 15e933c (only *.c in the same folder)
