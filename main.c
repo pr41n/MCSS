@@ -30,7 +30,7 @@ int main(){
     }
 
     pi = (double) count/NITER;
-    printf("Number of points: %1.2e\t Inside the circle: %d\n", NITER, count);
+    printf("Number of points: %1.2e\t Inside the circle: %d (%2.2f%%)\n", NITER, count, (float) count/NITER);
     printf("Estimation of pi: %1.5f \n", pi);
 
     return 0;
