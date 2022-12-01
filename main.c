@@ -23,8 +23,8 @@ int main(int argc, char *argv[]){
             exit(1);
     }
 
-    if (niter <= 0) {printf("niter must be positive\n"); exit(1);}
-    if (dim <= 1) {printf("dimension must be >=2\n"); exit(1);}
+    if (niter <= 0) {printf("Error: niter must be positive\n"); exit(1);}
+    if (dim <= 1) {printf("Error: dimension must be >=2\n"); exit(1);}
 
     double x[dim];
     double pi;
@@ -49,19 +49,24 @@ int main(int argc, char *argv[]){
         if (r2 <= 1.0) count++;       // add to count if point inside circle, including border
     }
 
-    pi = (double) powf((double) volume_factor(dim) * count/niter * pow(2,dim), (double)1 / ((int)dim/2));
+    pi = (double) powf((double) 1/volume_factor(dim) * count/niter * pow(2,dim), (double)1 / ((int)dim/2));
     printf("Number of points: %1.2e\t Inside: %d (%2.2f%%)\n", (float) niter, count, (float) count/niter*100);
     printf("Estimation of pi: %1.5f \n", pi);
+    //printf("Volume of %d-sphere: %1.5f \n", dim, volume_factor(dim)*pi);
 
     return 0;
 }
 
 double volume_factor (int n) {
+    /* Volume of a n-sphere with R=1 in units of pi
+     * V_n = 2*pi/n * V_{n-2}; V_1=2; V_2=pi=1
+     */
+
     if (n<0){printf("Error -> Volume factor: n must be positive\n"); exit(1);}
 
     switch (n) {
         case 1: return 2;
-        case 2: return 1;
+        case 2: return 1;       // V_2 = pi = 1
         default:
             return (float) 2/n * volume_factor(n-2);
     }
