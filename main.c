@@ -1,63 +1,68 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
-#define NITER 1e6
-#define DIM 2       // Dimension = 2 (circle)
+// TODO error estimation
 
-int main(){
-    double x[DIM];
+double volume_factor (int n);
+
+int main(int argc, char *argv[]){
+    int dim, niter;             //niter up to 2e+9
+    switch (argc) {
+        case 2:
+            sscanf(argv[1], "%d", &niter);
+            dim = 2;
+            break;
+        case 3:
+            sscanf(argv[1], "%d", &niter);
+            sscanf(argv[2], "%d", &dim);
+            break;
+        default:
+            printf("Usage:\t %s niter [OPTIONAL] dim\n", argv[0]);
+            exit(1);
+    }
+
+    if (niter <= 0) {printf("niter must be positive\n"); exit(1);}
+    if (dim <= 1) {printf("dimension must be >=2\n"); exit(1);}
+
+    double x[dim];
     double pi;
     long seed = time(0);
     int count = 0;
 
     // Display title and seed for random numbers
     printf("####### MONTE CARLO SIMULATION: PI #######\n");
-    printf("seed: %ld\n", seed);
+    printf("niter: %g\tdimension: %d\tseed: %ld\n", (float) niter, dim, seed);
 
     // Use seed for random numbers
     srand(seed);
 
     // Monte Carlo
     double r2;
-    for (unsigned long int i=0; i<NITER; i++) {
+    for (int i=0; i<niter; i++) {
         r2 = 0;
-        for (int k=0; k<DIM; k++) {
+        for (int k=0; k<dim; k++) {
             x[k] = (double) rand()/RAND_MAX * 2 - 1;        // uniform distribution in [-1,1]
             r2 += x[k]*x[k];                                // term of r² = x²
         }
         if (r2 <= 1.0) count++;       // add to count if point inside circle, including border
     }
 
-    pi = (double) count/NITER;
-    printf("Number of points: %1.2e\t Inside the circle: %d (%2.2f%%)\n", NITER, count, (float) count/NITER);
+    pi = (double) powf((double) volume_factor(dim) * count/niter * pow(2,dim), (double)1 / ((int)dim/2));
+    printf("Number of points: %1.2e\t Inside: %d (%2.2f%%)\n", (float) niter, count, (float) count/niter*100);
     printf("Estimation of pi: %1.5f \n", pi);
 
     return 0;
 }
 
-/*
- long random_at_most(long max) {
-    // Code by Ryan Reich:
-    // https://stackoverflow.com/questions/2509679/how-to-generate-a-random-integer-number-from-within-a-range
-    //
+double volume_factor (int n) {
+    if (n<0){printf("Error -> Volume factor: n must be positive\n"); exit(1);}
 
-    // Assumes 0 <= max <= RAND_MAX
-    // Returns in the closed interval [0, max]
-    unsigned long
-        // max <= RAND_MAX < ULONG_MAX, so this is okay.
-        num_bins = (unsigned long) max + 1,
-        num_rand = (unsigned long) RAND_MAX + 1,
-        bin_size = num_rand / num_bins,
-        defect   = num_rand % num_bins;
-
-    long x;
-    do {
-        x = random();        // random() has better distribution than rand(), not available in Windows
-        printf("%ld ", x);
+    switch (n) {
+        case 1: return 2;
+        case 2: return 1;
+        default:
+            return (float) 2/n * volume_factor(n-2);
     }
-    while (num_rand - defect <= (unsigned long) x);        // This is carefully written not to overflow
-
-    return x/bin_size;        // Truncated division is intentional
 }
- */
