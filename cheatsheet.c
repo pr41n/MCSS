@@ -1,5 +1,5 @@
-/*  --------VARIABLES--------
-TIPO    Bits    Range
+/*  --------VARIABLES-------- (32 bits)
+TIPO                Bits  Range
 char                8     -128 a 127
 unsigned char       8     0 a 255
 signed char         8     -128 a 127
@@ -17,7 +17,27 @@ long                32     -2147483648 a 2147483647
 unsigned long       32     0 a 4294967295
 float               32     3.4E-38 a 3.4E+38
 double              64     1.7E-308 a 1.7E+308
-long double         64 ó 80 (según versión).     1.7E-308 a 1.7E+308   ó 3.4E-4932 a 1.1E+4932
+long double         64     3.4E-4932 a 1.1E+4932
+*/
+
+/*  --------VARIABLES-------- (64 bits)
+char                  1 bytes    8 bits                 from -128 to 127
+unsigned char         1 bytes    8 bits                 from 0 to 255
+signed char           1 bytes    8 bits                 from -128 to 127
+short                 2 bytes   16 bits                 from -32768 to 32767
+short int             2 bytes   16 bits                 from -32768 to 32767
+unsigned short int    2 bytes   16 bits                 from 0 to 65535
+signed short int      2 bytes   16 bits                 from -32768 to 32767
+int                   4 bytes   32 bits                 from -2147483648 (-2.15e+09) to 2147483647 (2.15e+09)
+unsigned int          4 bytes   32 bits                 from 0 to 4294967295 (4.29e+09)
+signed int            4 bytes   32 bits                 from -2147483648 (-2.15e+09) to 2147483647 (2.15e+09)
+long                  8 bytes   64 bits                 from -9223372036854775808 (-9.22e+18) to 9223372036854775807 (9.22e+18)
+long int              8 bytes   64 bits                 from -9223372036854775808 (-9.22e+18) to 9223372036854775807 (9.22e+18)
+unsigned long int     8 bytes   64 bits                 from 0 to 18446744073709551615 (1.84e+19)
+signed long int       8 bytes   64 bits                 from -9223372036854775808 (-9.22e+18) to 9223372036854775807 (9.22e+18)
+float                 4 bytes   32 bits                 from 1.175494351e-38 (1.18e-38) to 3.402823466e+38 (3.40e+38)
+double                8 bytes   64 bits                 from 2.2250738585072014e-308 (2.23e-308) to 1.7976931348623158e+308 (1.79e+308)
+long double          16 bytes   128 bits                from --------------------------------------------
 */
 
 /* --------BASIC FORMAT SPECIFIERS--------
@@ -75,7 +95,7 @@ int main(){
     a = 'k';
 
 /* arrays */
-    float arr1[5] = {3.2, 6.55}     // missing values set to 0
+    float arr1[5] = {3.2, 6.55};     // missing values set to 0
     arr1[2] = arr1[1];
     int arr2[2][3] = {
         {3, 2, 6},
@@ -88,8 +108,9 @@ int main(){
     printf("double: %ld \n", sizeof(double));
     printf("char: %ld \n", sizeof(char));
 
-    printf("char: %ld \n", sizeof(short));
-    printf("char: %ld \n", sizeof(long));
+    printf("short: %ld \n", sizeof(short));
+    printf("long: %ld \n", sizeof(long));
+    printf("long long: %ld \n", sizeof(long long));
 
 /* input & output */
     char b = getchar();
