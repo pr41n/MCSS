@@ -8,7 +8,6 @@
 #include <time.h>
 #include <math.h>
 
-// TODO error estimation
 
 double volume_factor (int n);
 
@@ -17,7 +16,7 @@ int main(int argc, char *argv[]){
     int dim, niter;             // niter up to 2e+9
 
     /* User input control */
-    switch (argc) {
+    switch (argc) {                 ////////////
         case 2:
             sscanf(argv[1], "%d", &niter);
             dim = 2;
@@ -27,7 +26,7 @@ int main(int argc, char *argv[]){
             sscanf(argv[2], "%d", &dim);
             break;
         default:
-            printf("Usage:\t %s niter [OPTIONAL] dim\n", argv[0]);
+            printf("Usage:\t %s niter [OPTIONAL] dim\nDefault dim=2\n", argv[0]);
             exit(1);
     }
 
@@ -59,9 +58,17 @@ int main(int argc, char *argv[]){
 
     pi = (double) powf((double) 1/volume_factor(dim) * count/niter * pow(2,dim), (double)1 / ((int)dim/2));
 
+    /* Error estimation */
+    double  exact_prob = M_PI/4,
+            empirical_prob = (double) count/niter,
+            exact_err = pow(2,dim) * sqrt(exact_prob * (1-exact_prob) / niter),                 // only valid for dim=2 !!!!!
+            empirical_err = pow(2, dim) * sqrt(empirical_prob * (1-empirical_prob) / (niter-1));        // only valid for dim=2 !!!!!
+
     /* END */
-    printf("Number of points: %1.2e\t Inside: %d (%2.2f%%)\n", (float) niter, count, (float) count/niter*100);
-    printf("Estimation of pi: %1.5f \n", pi);
+
+    printf("Number of points: %.2e\t Inside: %d (%.2f%%)\n", (float) niter, count, (float) count/niter*100);
+    printf("Estimation of pi: %.5f +- %.5f (%.5f)\n", pi, exact_err, empirical_err);
+    printf("Deviation: %.5g sigmas\n", (pi-M_PI)/exact_err);
     //printf("Volume of %d-sphere: %1.5f \n", dim, volume_factor(dim)*pi);
 
     return 0;
