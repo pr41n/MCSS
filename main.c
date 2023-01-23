@@ -7,7 +7,7 @@
 
 /*Differences with 1D_Ising: N, for_loop, lattice_def - in main
                              ener_sum, magn_sum,
-                             metropolis_update
+                             metropolis_update (L -> L*L)
 */
 
 #include<stdio.h>
@@ -50,11 +50,13 @@ int main (int argc, char *argv[]){
     sscanf((argc==6) ? argv[5] : "0.44", "%f", &beta);
 
     if (L%2 != 0){printf("ERROR: L must be even\n"); exit(1);}
+    if (L<2){printf("ERROR: L must be >=2\n"); exit(1);}
     if (beta<=0){printf("ERROR: beta must be positive\n"); exit(1);}
 
 
     // BEGIN
     int N = L*L;
+    float invN = (float) 1/N;
     float kappa = J*beta;
 
     int ndisp = (int) niter/10,
@@ -74,8 +76,8 @@ int main (int argc, char *argv[]){
 
     // Generating initial lattice
     int *lattice = random_lattice(L);          // May test with stagger_lattice, up_lattice, down_lattice
-    double e = -J * ener_sum(L, lattice) / N;
-    double m = magn_sum(L, lattice) / N;
+    double e = -J * ener_sum(L, lattice) * invN;
+    double m = magn_sum(L, lattice) * invN;
 
     //printf("Initial configuration:\te=%4.3f\tm=%4.3f\n", e, m);
     //disp_lattice(L, lattice);
@@ -85,13 +87,13 @@ int main (int argc, char *argv[]){
     // Sequential update
     for (int n=0; n<niter; n++){
         if (n%nstore == 0) {
-            e = -J * ener_sum(L, lattice) / N;
-            m = magn_sum(L, lattice) / N;
+            e = -J * ener_sum(L, lattice) * invN;
+            m = magn_sum(L, lattice) * invN;
             fprintf(file, "\n%.8f\t%.8f", e, m);
         }
         if (n%ndisp == 0) {
-            e = -J * ener_sum(L, lattice) / N;
-            m = magn_sum(L, lattice) / N;
+            e = -J * ener_sum(L, lattice) * invN;
+            m = magn_sum(L, lattice) * invN;
             printf("%3.0f%%:\te=%4.3f\tm=%4.3f\n", (float) n/niter*100, e, m);
             disp_lattice(L, lattice);
         }
@@ -101,8 +103,8 @@ int main (int argc, char *argv[]){
                 lattice[k] = -lattice[k];
         }
     }
-    e = -J * ener_sum(L, lattice) / N;
-    m = magn_sum(L, lattice) / N;
+    e = -J * ener_sum(L, lattice) * invN;
+    m = magn_sum(L, lattice) * invN;
     printf("100%%:\te=%4.3f\tm=%4.3f\n", e, m);
     disp_lattice(L, lattice);
 
@@ -150,25 +152,28 @@ int metropolis_update (float kappa, int L, int *lattice, int x){
     /* Dynamic MC-method: Metropolis
      * returns boolean value whether to change or not
      */
-
-    /*-------Generally-------*/
     int *lat0 = lattice;
+
+    /*-------Generally-------*//*
     int lat1[L*L];
 
     for (int k=0; k<L*L; k++)
         lat1[k] = (k!=x) ? lat0[k] : -lat0[k];
 
-
     double  P0 = exp(kappa * ener_sum(L, lat0)),
             P1 = exp(kappa * ener_sum(L, lat1));
 
-    double Q = P1/P0;
+    double Q = P1/P0;*/
     /*-------Specifically-------*/
-    /*
-    diff = lat1[x]*lat1[x+1] + lat1[x]*lat1[x-1] - lat0[x]*lat0[x+1] - lat1[x]*lat1[x-1]    // TODO problems in borders
-    double Q = exp(kappa * diff)
-    */
+    int s_up =    (x >= L*(L-1)) ? lat0[x%L]       : lat0[x+L],
+        s_down =  (x <= L-1)     ? lat0[x+L*(L-1)] : lat0[x-L],
+        s_left =  (x%L == 0)     ? lat0[x+L-1]     : lat0[x-1],
+        s_right = (x%L == L-1)   ? lat0[x-L+1]     : lat0[x+1];
 
+    double diff = -2*lat0[x] * (s_up + s_down + s_left + s_right);
+    double Q = exp(kappa * diff);
+
+    /*-------Always-------*/
     if (Q >= 1) return 1;
 
     double r = (double) rand()/RAND_MAX;        // random number in [0, 1]      TODO should be in (0,1)
