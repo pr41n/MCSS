@@ -23,22 +23,24 @@ int *random_lattice (int L);
 
 ////////// MAIN
 int main (int argc, char *argv[]){
-    // TODO optional latter as input (txt)
+    // TODO optional lattice as input (txt)
+    // TODO input args using commands (-beta, -J, -o)
 
     // INPUT (TODO bof prevention)
     int L;
     float J, beta, niter;
 
-    if (argc == 1 || argc > 5){
-        printf("Usage:\t %s L [OPTIONAL] niter J beta \n", argv[0]);
-        printf("\tdefault: niter=1E+03, J=1, beta=1\n");
+    if (argc == 1 || argc > 6){
+        printf("Usage:\t %s L output_file [OPTIONAL] niter J beta \n", argv[0]);
+        printf("\tdefault: niter=1E+03, J=1, beta=0.44\n");
         exit(1);
     }
 
     sscanf(argv[1], "%d", &L);
-    sscanf((argc>=3) ? argv[2] : "1e3", "%f", &niter);        // set input if it exists else default value
-    sscanf((argc>=4) ? argv[3] : "1", "%f", &J);
-    sscanf((argc==5) ? argv[4] : "1", "%f", &beta);
+    FILE *file = fopen(argv[2], "w");
+    sscanf((argc>=4) ? argv[3] : "1e3", "%f", &niter);        // set input if it exists else default value
+    sscanf((argc>=5) ? argv[4] : "1", "%f", &J);
+    sscanf((argc==6) ? argv[5] : "0.44", "%f", &beta);
 
     if (L%2 != 0){printf("ERROR: L must be even\n"); exit(1);}
     if (beta<=0){printf("ERROR: beta must be positive\n"); exit(1);}
@@ -47,6 +49,13 @@ int main (int argc, char *argv[]){
     // BEGIN
     int N = L;
     float kappa = J*beta;
+
+    int ndisp = (int) niter/10,
+        nstore = (int) niter/1000;
+
+    if (ndisp==0)  ndisp=1;
+    if (nstore==0) nstore=1;
+
     srand(time(0));
 
     // Disp info
@@ -58,9 +67,10 @@ int main (int argc, char *argv[]){
 
     // Try an spsecific lattice
     int *lattice = random_lattice(L);          // May test with stagger_lattice, up_lattice, down_lattice
+
     double e = -J * ener_sum(L, lattice) / N;
     double m = magn_sum(L, lattice) / N;
-    printf("Initial configuration:\te=%4.3f\tm=%4.3f\n", e, m);
+    /*printf("Initial configuration:\te=%4.3f\tm=%4.3f\n", e, m);*/
 
     // Calculate energy and magnetization for beta
     // Sequential update
@@ -69,21 +79,26 @@ int main (int argc, char *argv[]){
             if (metropolis_update(kappa, L, lattice, i))
                 lattice[i] = -lattice[i];
 
-            if (lattice[i]==1)
+            /*if (lattice[i]==1)
                 printf("+");
             else
-                printf("-");
+                printf("-");*/
         }
-        puts("");
-        if (n%10 == 0) {
+        //puts("");
+        if (n%nstore == 0) {
             e = -J * ener_sum(L, lattice) / N;
             m = magn_sum(L, lattice) / N;
-            //printf("iteration %g:\te=%4.3f\tm=%4.3f\n", (float) n, e, m);
+            fprintf(file, "%6.4f\t%6.4f\n", e, m);
+        }
+        if (n%ndisp == 0) {
+            e = -J * ener_sum(L, lattice) / N;
+            m = magn_sum(L, lattice) / N;
+            printf("%3.0f%%:\te=%4.3f\tm=%4.3f\n", (float) n/niter*100, e, m);
         }
     }
     e = -J * ener_sum(L, lattice) / N;
     m = magn_sum(L, lattice) / N;
-    //printf("iteration %g:\te=%4.3f\tm=%4.3f\n", niter, e, m);
+    printf("100%%:\te=%4.3f\tm=%4.3f\n", e, m);
 
     return 0;
 }
