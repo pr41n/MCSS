@@ -33,7 +33,7 @@ int main (int argc, char *argv[]){
     // TODO optional lattice as input (txt)
     // TODO input args using commands (-beta, -J, -o)
 
-    // INPUT (TODO bof prevention)
+    /*INPUT*/
     int L;
     float J, beta, niter;
 
@@ -60,7 +60,7 @@ int main (int argc, char *argv[]){
     float kappa = J*beta;
 
     int ndisp = (int) niter/10,
-        nstore = (int) niter/1000;
+        nstore = (int) niter/1e7;
 
     if (ndisp==0)  ndisp=1;
     if (nstore==0) nstore=1;
@@ -98,7 +98,7 @@ int main (int argc, char *argv[]){
             disp_lattice(L, lattice);
         }
 
-        for (int k=0; k<N-1; k++){
+        for (int k=0; k<N; k++){
             if (metropolis_update(kappa, L, lattice, k))
                 lattice[k] = -lattice[k];
         }
