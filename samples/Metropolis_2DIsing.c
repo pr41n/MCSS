@@ -48,8 +48,8 @@ double invN,         // 1/N
 void get_data(int argc, char *argv[]){
     /*Get data from input (by now exec args, TODO entry file)*/
     if (argc == 1 || argc > 7){
-        printf("Usage:\t %s L output_file [OPTIONAL] niter J beta dim\n", argv[0]);
-        printf("\tdefault: niter=1E+03, J=1, beta=0.44, dim=2\n");
+        printf("Usage:\t %s Lx Ly output_file [OPTIONAL] niter J beta\n", argv[0]);
+        printf("\tdefault: niter=1E+03, J=1, beta=0.44\n");
         exit(1);
     }
 
@@ -60,7 +60,7 @@ void get_data(int argc, char *argv[]){
     sscanf((argc>=6) ? argv[5] : "1", "%f", &J);
     sscanf((argc==7) ? argv[6] : "0.44", "%f", &beta);
 
-    if (Lx<=1 || Ly<=1){printf("ERROR: L must be >=2\n"); exit(1);}
+    if (Lx <= 1 || Ly <= 1){printf("ERROR: L must be >=2\n"); exit(1);}
     if (beta<=0){printf("ERROR: beta must be positive\n"); exit(1);}
 }
 void setup(){
@@ -86,7 +86,7 @@ void setup(){
     un = realloc(un, sizeof(int) * Ly);
     dn = realloc(dn, sizeof(int) * Ly);
 
-    for (i=1; i<Lx-1 && i<Ly-1; i++){
+    for (i=0; i<Lx && i<Ly; i++){
         if (i < Lx-1){
             rn[i] = +1;
             ln[i] = -1;
