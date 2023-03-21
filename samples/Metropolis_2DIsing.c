@@ -98,7 +98,7 @@ void setup(){
     }
     /*boundry conditions*/
     ln[0] = Lx-1;
-    rn[Lx-1] = 0;
+    rn[Lx-1] = -ln[0];
     dn[0] = (Ly-1)*Lx;
     un[Ly-1] = -dn[0];
 }

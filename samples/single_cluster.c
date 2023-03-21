@@ -106,7 +106,7 @@ int main(){
     }
     /*boundry conditions*/
     ln[0] = L-1;
-    rn[L-1] = 0;
+    rn[L-1] = -ln[0];
     dn[0] = (L-1)*L;
     un[L-1] = -dn[0];
 
