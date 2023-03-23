@@ -31,19 +31,18 @@ float    frnd;          // normalised rnd 0<frnd<=1 (for Wolff)
 /*Physical values*/
 float   kappa;          // constant J/kT
 double  e,              // observable energy density
-        m,              // observable magnetization density
-        m2;             // observable squared magnetization density
+        m;              // observable magnetization density
 
 /*Simulation*/
 int8_t spin;            // value of the selected spin from the cluster
 
-uint8_t  nblock,        // number of blocks
-         nmeas,         // number of measures per block
-         nupdte,        // number of updates between 2 measures (from relaxation time)
+uint8_t  nblock;        // number of blocks
+uint16_t nmeas,         // number of measures per block
+         nupdte,        // number of updates between 2 measures
          ntherm;        // number of thermalization updates
-uint32_t ntotal,        // total number of updates
-         Ncs,           // number of spins inside the cluster
+uint32_t Ncs,           // number of spins inside the cluster
          Nc;            // number of clusters (for SW)
+uint64_t ntotal;        // total number of updates
 
 /*External files*/
 FILE    //*in_file,        // input file
@@ -74,16 +73,16 @@ void get_data(int argc, char *argv[]){
     /*Get data from input (by now exec args, TODO entry file)*/
     if (argc == 1 || argc > 7){
         printf("Usage:\t %s L output_file [OPTIONAL] nblock nmeas nupdte ntherm kappa\n", argv[0]);
-        printf("default: nblock=20, nmeas=1000, nmeas=5, ntherm=10, kappa=0.4406868\n");
+        printf("default: nblock=20, nmeas=1000, nupdte=5, ntherm=10, kappa=0.4406868\n");
         exit(1);
     }
 
     sscanf(argv[1], "%hd", &L);
     out_file = fopen(argv[2], "w");
     sscanf((argc>=4) ? argv[3] : "20", "%hhu", &nblock);        // set input if it exists elne default value
-    sscanf((argc>=5) ? argv[4] : "1000", "%hhu", &nmeas);
-    sscanf((argc>=6) ? argv[5] : "5", "%hhu", &nupdte);
-    sscanf((argc>=7) ? argv[6] : "10", "%hhu", &ntherm);
+    sscanf((argc>=5) ? argv[4] : "1000", "%hu", &nmeas);
+    sscanf((argc>=6) ? argv[5] : "5", "%hu", &nupdte);
+    sscanf((argc>=7) ? argv[6] : "10", "%hu", &ntherm);
     sscanf((argc>=8) ? argv[7] : "0.4406868", "%f", &kappa);
 
 
@@ -167,14 +166,13 @@ void measure() {
     static int64_t E, M;    // should be a 64-bit integer since N is 32-bit unsigned integer
 
     E = M = i = 0;      // reset measurements and site
-
     for (y=0; y<L; y++) {
+        nn[1] = un[y];
         for (x=0; x<L; x++){
             spin = lat[i];
             M += spin;
 
             nn[0] = rn[x];
-            nn[1] = un[y];
             for (nit=0; nit<2; nit++){
                 n = i + nn[nit];
                 E += spin * lat[n];
@@ -184,7 +182,6 @@ void measure() {
     }
     e  = (double) -JinvN * E;
     m  = (double) invN * M;
-    m2 = (double) invN * Ncs*Ncs;           // <M²> = \sum_{clusters} <Ncs> and just one cluster for Wolff
 }
 /*--output--*/
 void disp_lattice(int8_t *lattice) {
@@ -202,7 +199,7 @@ void disp_lattice(int8_t *lattice) {
     puts("");
 }
 void disp_init_info() {
-    printf("total steps: %d\nthermalization steps: %d\nmeasures: %d\nparticles: %d\nkappa: %.7f ", ntotal, ntherm, nblock*nmeas, N, kappa);
+    printf("total steps: %lu\nthermalization steps: %d\nmeasures: %d\nparticles: %d\nkappa: %.7f ", ntotal, ntherm, nblock*nmeas, N, kappa);
     if (kappa - log(1+sqrt(2))/2 < 1e-10)    printf("(near critical point ");
     else if (kappa < log(1+sqrt(2))/2)      printf("(below critical point ");
     else                                    printf("(above critical point ");
@@ -222,25 +219,29 @@ int main(int argc, char *argv[]){
 
     /*Thermalization*/
     printf("Beginning thermalization\n");
+    clock_t begin_timer = clock();
     for (int nt=0; nt<ntherm; nt++) {
         Wolff();
     }
+    clock_t end_timer = clock();
     //disp_lattice(lat);
     printf("Thermalization finished!\n\n");
 
     /*Measurements*/
     printf("Beginning measures\n");
+    float time_spent = (float) (end_timer-begin_timer)/CLOCKS_PER_SEC;
+    printf("Estimated time: %5dmin\n", (int) (time_spent/ntherm * (ntotal-ntherm)/60));
     for (int nb=0; nb<nblock; nb++) {
         if (nb%nbdisp == 0 || nb == nblock-1){
             measure();
-            printf("%3.0f%%:\te=%4.3f\tm=%4.3f\n", (float) nb/nblock*100, e, m);
+            printf("%3.0f%%:\te=%4.3f\tm^2=%4.3f\n", (float) 1.25*nb/nblock*100, e, m*m);
             //disp_lattice(lat);
         }
         for (j=0; j<nmeas; j++){
             for (k=0; k<nupdte; k++)
                 Wolff();
             measure();
-            fprintf(out_file, "\n%6.4f\t%6.4f\t%6.4f", e, m, m2);
+            fprintf(out_file, "\n%6.4f\t%6.4f", e, m);
         }
     }
     printf("Measures finished!\n");
